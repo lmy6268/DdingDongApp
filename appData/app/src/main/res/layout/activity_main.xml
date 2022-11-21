@@ -45,7 +45,7 @@
                 android:paddingTop="15dp"
                 android:text="내 계정"
                 android:textColor="#000000"
-                android:textSize="8pt"
+                android:textSize="20dp"
                 android:textStyle="bold" />
 
 
@@ -55,7 +55,7 @@
                 android:background="#00ff0000"
                 android:text="로그아웃>"
                 android:textColor="#FF4848"
-                android:textSize="8pt" />
+                android:textSize="16dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -145,7 +145,11 @@
             android:id="@+id/spinner"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:textColor="#000000"
+            android:textSize="16dp"
+            android:paddingHorizontal="14dp"
+            android:textStyle="bold"/>
     </LinearLayout>
 
     <ImageView
@@ -176,7 +180,10 @@
             android:textColor="#000000"
             android:textSize="16dp"
             android:textStyle="bold"
-            android:paddingHorizontal="10dp"/>
+            android:paddingHorizontal="20dp"
+            android:track="@drawable/switch_track_selector"
+            android:thumb="@drawable/switch_thumb_selector"
+            />
     </LinearLayout>
 
     <ImageView
@@ -207,7 +214,10 @@
             android:textColor="#000000"
             android:textSize="16dp"
             android:textStyle="bold"
-            android:paddingHorizontal="10dp"/>
+            android:paddingHorizontal="20dp"
+            android:track="@drawable/switch_track_selector"
+            android:thumb="@drawable/switch_thumb_selector"
+            />
     </LinearLayout>
 
     <LinearLayout
@@ -231,7 +241,10 @@
             android:textColor="#000000"
             android:textSize="16dp"
             android:textStyle="bold"
-            android:paddingHorizontal="10dp"/>
+            android:paddingHorizontal="20dp"
+            android:track="@drawable/switch_track_selector"
+            android:thumb="@drawable/switch_thumb_selector"
+            />
     </LinearLayout>
 
 </LinearLayout>
