@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1061447607308",
+    "project_id": "ddingdongapp",
+    "storage_bucket": "ddingdongapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1061447607308:android:8223acde94d21e0311fa29",
+        "android_client_info": {
+          "package_name": "com.application.ddingdongapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1061447607308-trbrgacmo9pjankeinq4bbuvp93gb1c9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.application.ddingdongapp",
+            "certificate_hash": "6a1932b4d586b6558281e7b28d6519a5dc051e27"
+          }
+        },
+        {
+          "client_id": "1061447607308-qvbogctth5bh3ua34c0vj47j5ami1h2v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBauzZuTNvYSIms3nBEe2e7d8xVLyNQ5-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1061447607308-qvbogctth5bh3ua34c0vj47j5ami1h2v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
