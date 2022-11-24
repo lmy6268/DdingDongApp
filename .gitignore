@@ -1,2 +1,4 @@
 backend/.keyfile/*
 backend/.vscode/*
+*/server/node_modules/*
+backend/crawl/test.txt

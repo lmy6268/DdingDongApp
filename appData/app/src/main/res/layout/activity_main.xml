@@ -246,5 +246,4 @@
             android:thumb="@drawable/switch_thumb_selector"
             />
     </LinearLayout>
-
 </LinearLayout>
