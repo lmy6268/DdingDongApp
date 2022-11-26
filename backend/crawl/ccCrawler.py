@@ -1,54 +1,59 @@
 #실제로 크롤링동작하는 프로그램
-from lxml.html import fromstring, tostring
-import lxml.etree as etree
+from lxml.html import fromstring
 import datetime
 # from multiprocessing import pool as p
 import json  # json화
 import requests
-import time
-import chulkyulCrawler as ch
+import sys
 weekDay = ['월', '화', '수', '목', '금', '토', '일']
 KST = datetime.timezone(datetime.timedelta(hours=9))
 today = datetime.datetime.today()
 today = datetime.datetime(today.year, today.month, today.day, today.hour, today.minute, 0,
                           tzinfo=KST)
-today = today.strftime('%Y-%m-%d %H:%M')
+today = today.strftime('%Y%m%d%H%M')
 #초기데이터
 # -> 사용자 정보(학번, 이름, 이메일, 아이디, 비밀번호) , 수업 정보
 
 #이후에는 가지고 있는 정보를 토대로 알림을 수신.
+def daydiff(day):
+    if day == 5 :
+        return 52359
+    elif day == 3:
+        return 32359
 
-def translateWord(date):
-    query =f"translate({date}, '-', '')"
-    query = f"translate({query},' ','')"
-    date = f"translate({query},':','')"
-    return date
 
 
 # 과제 정보 크롤링 -> 학습활동 - 과제 (없는 경우도 있음 -> 예외처리 )
 def crawlHomeWork(session, classList, className):
+    needToSubmit = {}
     url = classList[className]['link']
     html = session.get(url)
     parser = fromstring(html.text)
     assignCheck = parser.xpath(
         "//*[@id='coursemos-course-menu']/ul/li[2]/div/div[2]/ul/li/a[contains(text(),'과제')]")
-    if (len(assignCheck) == 0):
-        print("과제가 존재하지 않음")
-    else:
-        with session.get(assignCheck[0].get('href')) as assignSite:
-            html = assignSite.content
-            assignParser = fromstring(html)
-            table = assignParser.xpath(
-                "//*[contains(@class,'generaltable') and contains(@class,table-bordered)]/tbody")
-            compareDateQuery = f"td[3][number({translateWord('text()')}) - number(translate(translate(translate('{today}', '-', ''),' ',''),':',''))<=1]"
-            checkUnSubmitQuery = "td[4]='제출 완료'"
-            assignList = table[0].xpath(f"//tr[{compareDateQuery} and {checkUnSubmitQuery}]")
-            if assignList != []:
-                for i in assignList:
-                    aName = i[1].xpath("./a")[0].text
-                    aDeadLine = i[2].text
-                    aState = i[3].text
-                    print(f"과제명: {aName} ,제출 마감: {aDeadLine} ,제출 상태:{aState}")
+    try:
+        if (len(assignCheck) == 0):
+            print("과제가 존재하지 않음")
+            raise FileNotFoundError
+        else:
+            with session.get(assignCheck[0].get('href')) as assignSite:
+                html = assignSite.content
+                assignParser = fromstring(html)
+                #현재 시간과 마감시간의 차이
+                timeCheck =f"td[3][number(translate(translate(translate(text(),'-',''),' ',''),':',''))-{today} >=0 and number(translate(translate(translate(text(),'-',''),' ',''),':',''))-{today} <={daydiff(3)} ]"
+                submitCheck = f"td[4]='미제출'"
+                query = f"//*[contains(@class,'generaltable') and contains(@class,table-bordered)]/tbody/tr[{timeCheck} and {submitCheck}]"
+                assignList = assignParser.xpath(query)
+                if assignList != []:
+                    for i in assignList:
+                        aName = i[1].xpath("./a")[0].text
+                        aDeadLine = i[2].text
+                        aState = i[3].text
+                        needToSubmit['과제명']
+                        print(f"과제명: {aName} ,제출 마감: {aDeadLine} ,제출 상태:{aState}")
+    except FileNotFoundError:
+        return json.dumps({"data":None})
+        
 #수업 목록 크롤링 -> 사용자 정보에 등록용
 
 
@@ -70,80 +75,26 @@ def crawlClassList(parser):
     return lists
 
 
-# 강의 수강 정보 크롤링 -> 기본 루프
-def crawlVideo(session, parser):
-    #강좌 리스트와 링크를 담는 사전(Dictionary)
-    lessonList = {}
-    #강좌 목록
-    t = parser.xpath("//ul[@class='my-course-lists coursemos-layout-0']")
-    #강좌 별 링크 -> 이걸 저장해 두어야 바로 즉각 대응이 가능 -> 로그인 시에 이 정보를 가져오도록 한다.!
-    link = parser.xpath(".//a[@class='course_link']")
-    #강좌명
-    t = t[0].xpath(".//div[@class='course-title']")
+#온라인 출석 체크 (인자 - > session, 강의명, 기준일 )
+def crawlOnlineAtdc(session,lesson,stdDate=None):
+    html = session.get(lesson['link']).content
+    parser = fromstring(html)
+    dayList=parser.xpath('//*[@id="region-main"]/div/div/div[4]/div/ul/li')
+    attList = parser.xpath('//*[@id="region-main"]/div/div/div[3]/div/ul/li[contains(@class,attendance_section)]')
+    data =[]
+    for i in attList:
+        data.extend([data for data in i.itertext() if not data.isdigit()])
+    for i in range(len(dayList)):
+        if not (data[i] == '-'):
+            weekName =dayList[i].attrib['aria-label']
+            vdList =dayList[i].xpath("./div[@class='content']/ul/li[contains(@class,modtype_vod)]//div[@class='activityinstance']//span[@class='instancename']")
+            for i in vdList:
+                print(i.text)
 
-    #강좌 사전에 각각의 값을 넣음
-    n = len(t)  # 수강하는 강좌의 수
-    for i in range(n):
-        lessonList[f"{t[i].xpath('.//h3')[0].text}"] = f"{link[i].attrib['href']}"
-    # pool=p(processes=2)
-    '''
-    이후에 이메일 혹은 생체 인증을 위한 부분이 나온다. 
-    만약 해당 부분이 안된 경우, 
-    사용자에게 알릴 수 있어야 한다.
-    '''
-    try:
-        #강좌별 출석현황을 파악하기(병렬처리를 해도 됨)
-        for k in lessonList:
-            page = session.get(lessonList[f"{k}"])
-            try:
-                attendanceL = session.get(fromstring(page.text).xpath(
-                    "//a[@title='Online-Attendance']")[0].attrib['href'])
-            except IndexError:  # 발견하지 못한 경우
-                attendanceL = session.get(fromstring(page.text).xpath(
-                    "//a[@title='온라인출석부']")[0].attrib['href'])
-            #출석부 테이블
-            table = fromstring(attendanceL.text).xpath(
-                "//table[@class='table  table-bordered user_progress_table']/tbody/tr/td")
-            #레슨리스트 초기화
-            lessonList[f"{k}"] = []
-            now = [[i+1] for i in range(16)]  # 강의주차가 총 16주차이므로
-            idx = 0
-            final = ""
-            cnt = 0  # 초기값세팅
-            for i in table:  # 각 주차별 Loop
-                if i.text != None and len(i.text) <= 2:  # 만약 강의가 있는 경우
-                    if i.text == 'O' or i.text == 'X':
-                        if cnt == 1:
-                            final = i.text
-                        else:
-                            now[idx].append(i.text)
-                            cnt += 1
-                    elif i.text == '\xa0' or i.text == '-':
-                        continue
-                    else:
-                        if len(now[idx]) > 2:
-                            now[idx].append(f"result: {final}")
-                        idx = int(i.text)-1
-                        cnt = 0
-                        final = ""
-                elif i.text == None:  # 과목명이 이미지 태그 내부에 있어서 None이라고 출력됨. 이 오류를 해결하기 위한 분기문
-                    now[idx].append(i.text_content())  # 과목명 추출
-                elif ":" in i.text:  # 각 영상 실행시간은 스킵
-                    continue
-                else:
-                    now[idx].append(i.text)  # 영상 명과 수행 여부만 체크
-            lessonList[f"{k}"] = now
-        resD = json.dumps(lessonList, ensure_ascii=False)  # 결과물
-        return resD
-
-    except:
-        print("생체인증 혹은 메일인증을 한 후 진행해 주세요.")
-        return None  # 사용자가 메일 인증 또는 생체 인증을 해야하는 경우
 
 #사용자 정보 가져오기
-
-
-def crawlUserInfo(session):
+def crawlUserInfo(id,pw):
+    session = login(id,pw)
     userData = {}
     main = session.get("https://cc.sungkyul.ac.kr")
     parser = fromstring(main.text)
@@ -163,7 +114,7 @@ def crawlUserInfo(session):
 #초기세팅 -> 로그인 시도
 
 
-def login(fileName):
+def login(userID,userPW):
     with requests.session() as session:
         #실제 활용할 것
         # userID=f"{sys.argv[1]}" #받아온 사용자의 ID
@@ -173,11 +124,12 @@ def login(fileName):
             'Referer': 'https://cc.sungkyul.ac.kr/login.php',
             'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Mobile Safari/537.36'
         }
-        f = open(fileName, 'r')
-        account = f.readlines()
-        userID = account[0].replace('\n', '')
-        userPW = account[1]
-        f.close()
+        # f = open(fileName, 'r')
+        # account = f.readlines()
+        # userID = account[0].replace('\n', '')
+        # userPW = account[1]
+        # f.close()
+
         #유저데이터
         data = {
             'username': userID, 'password': userPW
@@ -196,34 +148,30 @@ def login(fileName):
             except NameError or IndexError:
                 return 0  # 사용자가 메일 인증 또는 생체 인증을 해야하는 경우
         else:
-            return None  # 로그인이 안되는 경우
+            return None  # 로그인이 안되는 경우(회원 정보 업데이트 필요) -> DB에 있는 경우, 사용자에게 알림을 보냄
 
 
-def mainLoop(fileName, type=0):
-    start = time.time()
+def mainLoop(id,pw):
     try:
-        session = login(fileName)
+        session = login(id,pw)
         if (session == None):
-            raise ValueError  # 인증 필요
+            raise NameError  # 인증 필요
         elif session == 0:
-            raise NameError  # 잘못된 정보
+            raise ValueError  # 잘못된 정보
         html = session.get("https://cc.sungkyul.ac.kr/").text
         parser = fromstring(html)
-        resD = crawlVideo(session, parser)
-        userData = crawlUserInfo(session)
+        # resD = crawlVideo(session, parser)
+        userData = crawlUserInfo(id,pw)
         userData["classList"] = crawlClassList(parser)
-        for l in userData["classList"]:
-            print(l)
-            crawlHomeWork(session, userData["classList"], l)
+        crawlOnlineAtdc(session,userData['classList']['논리회로'])
+        return userData
     except ValueError:
-        print("생체인증  혹은 메일인증을 한 후 진행해 주세요.")
+        # print("생체인증  혹은 메일인증을 한 후 진행해 주세요.")
+        print("ValueError")
     except NameError:
         print("일치하는 정보가 없습니다. 다시 시도해 주세요.")
-    end = time.time()
+        print("NameError")
 
-    return userData
-
-
-    # print("소요시간 : %f ms" % (end-start))
-print(mainLoop("./crawl/test.txt"))
-# print(weekDay[datetime.datetime.today().weekday()])
+if __name__=='__main__':
+    # print(mainLoop("./crawl/test.txt"))
+    mainLoop(sys.argv[0],sys.argv[1])

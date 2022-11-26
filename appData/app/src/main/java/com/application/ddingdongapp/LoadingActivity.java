@@ -23,7 +23,7 @@ public class LoadingActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoadingActivity.this,LoginActivity.class);
                 startActivity(intent);
             }
-        }, 5000);   //5 seconds
+        }, 500);   //5 seconds
         String items[] = {"hello","hi","now"};
 
 
