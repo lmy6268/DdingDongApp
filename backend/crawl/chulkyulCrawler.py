@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service as ChromeService
 import time
 from datetime import datetime
+import sys
 
 url = "https://smart.sungkyul.ac.kr" #성결대 전자출결 시스템 주소
 mainUrl ="https://smart.sungkyul.ac.kr/atdc/atdc"
@@ -77,8 +78,8 @@ def mainLoop(userData,subject,date=None):
 #메인 함수
 if __name__ =="__main__":
   start = time.time()
-  userData={"stcID": "20170993","stcPW":"pw"}
-  if mainLoop(userData,"C프로그래밍","2022.11.22"):
+  userData={"stcID": sys.argv[0],"stcPW":sys.argv[1]}
+  if mainLoop(userData,"C프로그래밍"):
     print("정상 출석입니다.")
   else:
     print("결석입니다.")

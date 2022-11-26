@@ -2,3 +2,5 @@ backend/.keyfile/*
 backend/.vscode/*
 */server/node_modules/*
 backend/crawl/test.txt
+backend/server/.env
+backend/server/filebaseAdmin.json

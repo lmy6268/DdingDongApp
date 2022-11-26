@@ -21,6 +21,7 @@
         tools:layout_editor_absoluteY="16dp" />
 
     <EditText
+        android:id="@+id/edtID"
         android:hint="아이디"
         android:maxLines="1"
         android:layout_marginHorizontal="40dp"
@@ -33,6 +34,7 @@
         android:hint="비밀번호"
         android:maxLines="1"
         android:maxLength="20"
+        android:id="@+id/edtPW"
         android:layout_marginHorizontal="40dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
