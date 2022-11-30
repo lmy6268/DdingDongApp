@@ -21,6 +21,9 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+/*
+* 알림을 어떻게 띄워줘야 할지 및
+* */
 public class FcmService extends FirebaseMessagingService {
     private String fcmToken;
     public FcmService() {
@@ -60,9 +63,11 @@ public class FcmService extends FirebaseMessagingService {
         remoteViews.setImageViewResource(R.id.logo, com.google.firebase.messaging.R.drawable.common_google_signin_btn_text_dark);
         return remoteViews;
     }
+    //알림을 띄워준다.
     public void showNotification(String title, String message) {
         //팝업 터치시 이동할 액티비티를 지정합니다.
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = title.equals("출석체크알림")? new Intent(this, LoginActivity.class):new Intent(this, MainActivity.class);
+
         //알림 채널 아이디 : 본인 하고싶으신대로...
         String channel_id = "DdingDongApp";
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

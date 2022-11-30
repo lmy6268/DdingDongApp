@@ -4,3 +4,4 @@ backend/.vscode/*
 backend/crawl/test.txt
 backend/server/.env
 backend/server/filebaseAdmin.json
+backend/server/userdata/*

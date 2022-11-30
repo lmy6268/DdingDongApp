@@ -13,66 +13,91 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.application.ddingdongapp.databinding.ActivityMainBinding;
 import com.application.ddingdongapp.roomDataBase.SubjectDao;
 import com.application.ddingdongapp.roomDataBase.TotalDataBase;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
-
-    String[] items = {"과목0", "과목1", "과목2", "과목3", "과목4"};
-
-
+    ActivityMainBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        UserInfo userInfo = getIntent().getParcelableExtra("userInfo"); //로그인 한 사용자 정보
+        setUI(userInfo);
+    }
 
-        //데이터 베이스 생성
-        TotalDataBase db = Room.databaseBuilder(getApplicationContext(),
-                TotalDataBase.class, "DdingDongDb").build();
-        SubjectDao subjectDao = db.subjectDao();
-
-
-        //데이터 베이스에서 데이터 불러오기
-        // 데이터 세팅
-
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_spinner_item, items);
+    private void setUI(UserInfo userInfo){
+        ArrayList<String> classNameList = new ArrayList<>();
+        ArrayList<ClassData> dataList = new ArrayList(userInfo.getClassDataList());
+        for(ClassData a : userInfo.getClassDataList()){
+            classNameList.add(a.getName());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter(
+                this, android.R.layout.simple_spinner_item, classNameList); //
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         binding.spinner.setAdapter(adapter);
+        binding.tvName.setText(userInfo.getName());
+        binding.tvDept.setText(userInfo.getDept());
+        binding.btnLogout.setOnClickListener(v->{
+            new AlertDialog.Builder(this)
+                    .setTitle("로그아웃 하시겠습니까?")
+                    .setPositiveButton("네", (dialog1, which) -> {
+                        dialog1.dismiss();
+                        Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+                        startActivity(intent);
+                        Toast.makeText(MainActivity.this,"정상적으로 로그아웃 되었습니다.",Toast.LENGTH_SHORT).show();
+                        finish();
+                    }).setNegativeButton("아니오", ((dialog1, which) ->
+                    {
+                        dialog1.dismiss();
+                    })).show();
+        });
+
 
 
         binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            String title;
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                binding.swStartTime.setText(items[position]);
-                binding.swVideo.setText(items[position]);
-                binding.swSubmit.setText(items[position]);
+                title= classNameList.get(position);
+                binding.swStartTime.setText(String.format("%s 수업 시작 시간 알림",title));
+                binding.swStartTime.setChecked(dataList.get(position).getAlarm().get(1));
+                binding.swVideo.setText(String.format("%s 영상 강의 알림", title));
+                binding.swVideo.setChecked(dataList.get(position).getAlarm().get(1));
+                binding.swSubmit.setText(String.format("%s 과제 제출 알림", title));
+                binding.swSubmit.setChecked(dataList.get(position).getAlarm().get(2));
+                binding.swSubmit.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    dataList.get(position).setAlarmByType(position,isChecked);
+                });
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                binding.swStartTime.setText("");
-                binding.swSubmit.setText("");
-                binding.swVideo.setText("");
+                title = "";
+                binding.swStartTime.setText(String.format("%s 수업 시작 시간 알림",title));
+                binding.swVideo.setText(String.format("%s 영상 강의 알림", title));
+                binding.swSubmit.setText(String.format("%s 과제 제출 알림", title));
             }
         });
 
     }
-
-
     @Override
     public void onBackPressed() {
+        close();
+    }
+    private void close(){
         new AlertDialog.Builder(this)
                 .setTitle("앱을 종료하시겠습니까?")
                 .setPositiveButton("네", (dialog1, which) -> {
                     dialog1.dismiss();
-                    ActivityCompat.finishAffinity(this);
-                    System.exit(0);
+                    finish();
                 }).setNegativeButton("아니오", ((dialog1, which) ->
                 {
                     dialog1.dismiss();
