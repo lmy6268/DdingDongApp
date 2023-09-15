@@ -187,7 +187,6 @@ def main(id,pw,tp,classList=None):
 
 if __name__=='__main__':
     id,pw = sys.argv[1],sys.argv[2]
-    # id,pw = ["habinjang12","habin@1102"]
     tp = sys.argv[3]
     if(len(sys.argv)>4) : #강의 목록을 보낸경우
         classList = eval(sys.argv[4])
