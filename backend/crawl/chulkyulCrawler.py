@@ -77,7 +77,7 @@ def mainLoop(userData,subject,date=None):
 #메인 함수
 if __name__ =="__main__":
   start = time.time()
-  userData={"stcID": "20170993","stcPW":"lmky7168@@"}
+  userData={"stcID": "20170993","stcPW":}
   if mainLoop(userData,"C프로그래밍"):
     print("정상 출석입니다.")
   else:
