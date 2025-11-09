@@ -5,3 +5,7 @@ backend/crawl/test.txt
 backend/server/.env
 backend/server/filebaseAdmin.json
 backend/server/userdata/*
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+
